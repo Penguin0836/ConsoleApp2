@@ -1,30 +1,18 @@
 ﻿using NLog;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace TestTask.Services.Utility
 {
-    class MyLogger : ILogger
+    internal class MyLogger : ILogger
     {
-        private static MyLogger instance;
-        private static Logger logger;
+        private static MyLogger _instance;
+        private static Logger _logger;
         public static MyLogger GetInstance()
         {
-            if (instance == null)
-            {
-                instance = new MyLogger();
-            }
-            return instance;
+            return _instance ??= new MyLogger();
         }
-        private Logger GetLogger(string theLogger)
+        private static Logger GetLogger(string theLogger)
         {
-            if (logger == null)
-            {
-                logger = LogManager.GetLogger(theLogger);
-            }
-
-            return logger;
+            return _logger ??= LogManager.GetLogger(theLogger);
         }
         public void Warning(string message, string arg = null)
         {

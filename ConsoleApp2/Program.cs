@@ -1,20 +1,19 @@
 ﻿using TestTask.Services.Utility;
 using System;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace TestTask
 {
-    class Program
+    internal static class Program
     {
-        static async Task Main(string[] args)
+        private static async Task Main()
         {
             Console.WriteLine("Введите адрес страницы:");
-            string url = Console.ReadLine();
+            var url = Console.ReadLine();
             try
             {
-                await HTML.Download(url);
-                HTML.FindUniqueWord();
+                await Html.Download(url);
+                Html.FindUniqueWord();
             }
             catch (Exception e)
             {

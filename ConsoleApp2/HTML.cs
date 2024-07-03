@@ -11,86 +11,83 @@ using System.Threading.Tasks;
 
 namespace TestTask
 {
-    public class HTML
+    public static class Html
     {
-        static readonly HttpClient client = new HttpClient();
-        static HtmlDocument site = new HtmlDocument();
-        public static async Task Download(string URI)
+        private static readonly HttpClient Client = new HttpClient();
+        private static readonly HtmlDocument Site = new HtmlDocument();
+        public static async Task Download(string uri)
         {
             MyLogger.GetInstance().Info("Send a GET request");
-            string responseBody = await client.GetStringAsync(URI);
+            var responseBody = await Client.GetStringAsync(uri);
 
             MyLogger.GetInstance().Info("Save a HTML");
-            using StreamWriter htmlWriter = new StreamWriter("site.html", false, Encoding.Default);
-            htmlWriter.WriteLine(responseBody);
+            await using var htmlWriter = new StreamWriter("site.html", false, Encoding.Default);
+            await htmlWriter.WriteLineAsync(responseBody);
         }
-        public static string[] ClearText()
+
+        private static string[] ClearText()
         {
-            Regex htmlSymbols = new Regex(@"&..*");
-            string[] charsToRemove = new string[] { "@", "+", "=", "{", "}", "*", "/", "<", ">", "%", "^", "~" };
-            char[] separators = new char[] { ' ', ',', '.', '!', '?', '"', ';', ':', '[', ']', '(', ')', '\n', '\r', '\t', '-', '—' };
+            var htmlSymbols = new Regex(@"&..*");
+            var charsToRemove = new[] { "@", "+", "=", "{", "}", "*", "/", "<", ">", "%", "^", "~" };
+            var separators = new[] { ' ', ',', '.', '!', '?', '"', ';', ':', '[', ']', '(', ')', '\n', '\r', '\t', '-', '—' };
 
             MyLogger.GetInstance().Info("Search a text");
-            string htmlNodes = site.DocumentNode.SelectSingleNode("/html/body").InnerText.Trim().Replace("&nbsp;", "").Replace("-", "");
+            var htmlNodes = Site.DocumentNode.SelectSingleNode("/html/body").InnerText.Trim().Replace("&nbsp;", "").Replace("-", "");
 
             MyLogger.GetInstance().Info("Delete HTML symbols");
-            string deletingHTMLSymbols = htmlSymbols.Replace(htmlNodes.ToString(), ""); // delete html symbols
+            var deletingHtmlSymbols = htmlSymbols.Replace(htmlNodes.ToString(), ""); // delete html symbols
             
             MyLogger.GetInstance().Info("Delete numbers");
-            string deletingNumbers = new string(deletingHTMLSymbols.Where(c => c != '-' && (c < '0' || c > '9')).ToArray()); // delete numbers
+            var deletingNumbers = new string(deletingHtmlSymbols.Where(c => c != '-' && (c < '0' || c > '9')).ToArray()); // delete numbers
             
             MyLogger.GetInstance().Info("Escape words");
-            string escapedWords = deletingNumbers.Replace("'", "''");
+            var escapedWords = deletingNumbers.Replace("'", "''");
 
             MyLogger.GetInstance().Info("Delete symbols");
-            foreach (string c in charsToRemove)
-            {
-                escapedWords = escapedWords.Replace(c, string.Empty);
-            }
+            escapedWords = charsToRemove.Aggregate(escapedWords, (current, c) => current.Replace(c, string.Empty));
 
             MyLogger.GetInstance().Info("Split string");
-            string[] words = escapedWords.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            var words = escapedWords.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             return words;
         }
-        public static void WriteData(Dictionary<string, int> wordsCount)
+
+        private static void WriteData(Dictionary<string, int> wordsCount)
         {
             MyLogger.GetInstance().Info("Write data into database");
-            WorkWithSQLite data = new WorkWithSQLite();
+            var data = new WorkWithSqLite();
             data.CreateDatabaseAndTable();
             
-            for (int i = 0; i < wordsCount.Count; i++)
+            for (var i = 0; i < wordsCount.Count; i++)
             {
                 data.AddData(wordsCount.ElementAt(i).Key, wordsCount.ElementAt(i).Value);
             }
         }
         public static void FindUniqueWord()
         {
-            Dictionary<string, int> wordsCount = new Dictionary<string, int>();
+            var wordsCount = new Dictionary<string, int>();
             Console.WriteLine("Ожидайте...");
 
             MyLogger.GetInstance().Info("Load a site");
-            site.Load("site.html");
+            Site.Load("site.html");
 
             MyLogger.GetInstance().Info("TempWords == words");
-            string[] words = ClearText();
-            string[] tempWords = words;
-            foreach (string word in words)
+            var words = ClearText();
+            foreach (var word in words)
             {
-                int countOfWord = 1;
-                foreach (string tempWord in tempWords)
+                var countOfWord = 1;
+                foreach (var tempWord in words)
                 {
-                    if (word == tempWord)
+                    if (word != tempWord) continue;
+                    
+                    if (wordsCount.ContainsKey(word))
                     {
-                        if (wordsCount.ContainsKey(word))
-                        {
-                            wordsCount[word] += 1;
-                        }
-                        else
-                        {
-                            wordsCount.Add(word, countOfWord++);
-                        }
-                        word.Replace(word, "");
+                        wordsCount[word] += 1;
                     }
+                    else
+                    {
+                        wordsCount.Add(word, countOfWord++);
+                    }
+                    word.Replace(word, "");
                 }
             }
 

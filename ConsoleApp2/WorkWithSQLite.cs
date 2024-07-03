@@ -3,40 +3,40 @@ using System.IO;
 
 namespace TestTask
 {
-    class WorkWithSQLite
+    internal class WorkWithSqLite
     {
-        SQLiteConnection con;
-        SQLiteCommand cmd;
+        private SQLiteConnection _con;
+        private SQLiteCommand _cmd;
         public void CreateDatabaseAndTable()
         {
             if (!File.Exists("WordTable.db"))
             {
                 SQLiteConnection.CreateFile("WordTable.db");
 
-                string sql = @"CREATE TABLE Words(
+                var sql = @"CREATE TABLE Words(
                                Word           TEXT      NOT NULL,
                                CountOfWord            INTEGER       NOT NULL
                             );";
-                con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
-                con.Open();
-                cmd = new SQLiteCommand(sql, con);
-                cmd.ExecuteNonQuery();
-                con.Close();
+                _con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
+                _con.Open();
+                _cmd = new SQLiteCommand(sql, _con);
+                _cmd.ExecuteNonQuery();
+                _con.Close();
             }
             else
             {
-                con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
+                _con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
             }
         }
         public void AddData(string word, int countOfWord)
         {
-            cmd = new SQLiteCommand();
-            con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
-            con.Open();
-            cmd.Connection = con;
-            cmd.CommandText = "INSERT INTO Words(Word, CountOfWord) VALUES ('" + word + "','" + countOfWord + "')";
-            cmd.ExecuteNonQuery();
-            con.Close();
+            _cmd = new SQLiteCommand();
+            _con = new SQLiteConnection("Data Source=WordTable.db;Version=3;");
+            _con.Open();
+            _cmd.Connection = _con;
+            _cmd.CommandText = "INSERT INTO Words(Word, CountOfWord) VALUES ('" + word + "','" + countOfWord + "')";
+            _cmd.ExecuteNonQuery();
+            _con.Close();
         }
     }
 }

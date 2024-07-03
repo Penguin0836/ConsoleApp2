@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using NLog;
-
-namespace TestTask.Services.Utility
+﻿namespace TestTask.Services.Utility
 {
-    interface ILogger
+    internal interface ILogger
     {
         public void Error(string message, string arg = null);
         public void Warning(string message, string arg = null);
