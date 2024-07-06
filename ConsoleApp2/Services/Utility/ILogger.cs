@@ -1,6 +1,6 @@
 ﻿namespace TestTask.Services.Utility
 {
-    internal interface ILogger
+    public interface ILogger
     {
         public void Error(string message, string arg = null);
         public void Warning(string message, string arg = null);
